@@ -19,11 +19,11 @@ class BatimentController extends Controller
     public function index(Request $request)
     {
         $responseBody = null;
-        $ville = $request->input('ville');
+        $adresse = $request->input('adresse');
         $client = new \GuzzleHttp\Client(); //GuzzleHttp\Client
-        $url = "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={$ville}&type=locations&sr=2056&origins=address";
-
-        if ($ville != ''){
+        $url = "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={$adresse}&type=locations&sr=2056&origins=address";
+        $infos = [];
+        if ($adresse != ''){
           $i = 0;
           $infos =array();
           $infosReturn = array();
@@ -42,7 +42,7 @@ class BatimentController extends Controller
           }
 
         }
-        return view('batiment.index', ['responseBody' => $responseBody, 'ville' => $ville, 'infos'=> $infos]);
+        return view('batiment.index', ['responseBody' => $responseBody, 'adresse' => $adresse, 'infos'=> $infos]);
     }
 
     /**
