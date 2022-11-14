@@ -19,28 +19,17 @@ class BatimentController extends Controller
     public function index(Request $request)
     {
         $responseBody = null;
+        $infos = [];
         $adresse = $request->input('adresse');
         $client = new \GuzzleHttp\Client(); //GuzzleHttp\Client
         $url = "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={$adresse}&type=locations&sr=2056&origins=address";
-        $infos = [];
         if ($adresse != ''){
           $i = 0;
-          $infos =array();
           $infosReturn = array();
           $response = $client->request('GET', $url);
           $responseBody = json_decode($response->getBody());
           $responseBody = $responseBody->{'results'};
-          foreach ($responseBody as $response) {
-            $egid = $response->{"attrs"}->{"featureId"};
-            $url_egit = "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.bfs.gebaeude_wohnungs_register/{$egid}/extendedHtmlPopup?lang=fr";
-            $client = new Client();
-            $crawler = $client->request('GET', $url_egit);
-            array_push( $infos,$crawler->filter('td.cell-meta-small')->each( function ($node) {
-                $nom = trim($node->filter('td')->text());
-                return $nom;
-              }));
-          }
-
+          $infos = $this->parsing($responseBody);
         }
         return view('batiment.index', ['responseBody' => $responseBody, 'adresse' => $adresse, 'infos'=> $infos]);
     }
@@ -111,4 +100,20 @@ class BatimentController extends Controller
         //
     }
 
+    private function parsing($responseBody)
+    {
+      $infos =array();
+      foreach ($responseBody as $response) {
+        $egid = $response->{"attrs"}->{"featureId"};
+        $url_egit = "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.bfs.gebaeude_wohnungs_register/{$egid}/extendedHtmlPopup?lang=fr";
+        $client = new Client();
+        $crawler = $client->request('GET', $url_egit);
+        array_push( $infos,$crawler->filter('td.cell-meta-small')->each( function ($node) {
+            $nom = trim($node->filter('td')->text());
+            return $nom;
+          }));
+      }
+      return $infos;
+
+  }
 }
